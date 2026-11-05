@@ -1,0 +1,176 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0E8FC9;
+  --color-primary-hover: #0b7bb0;
+  --color-primary-light: #35B6E8;
+  --color-primary-soft: #E8F4FB;
+  --color-primary-tint: #F3F9FD;
+  --color-navy: #1F2A37;
+  --color-navy-muted: #6B7280;
+  --color-navy-light: #9CA3AF;
+  --font-sans: 'Plus Jakarta Sans', 'Poppins', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  --background: #F4F9FD;
+  --foreground: #1F2A37;
+  --card: #FFFFFF;
+  --card-foreground: #1F2A37;
+  --popover: #FFFFFF;
+  --popover-foreground: #1F2A37;
+  --primary: #0E8FC9;
+  --primary-foreground: #FFFFFF;
+  --primary-gradient: linear-gradient(135deg, #0E8FC9 0%, #35B6E8 100%);
+  --primary-gradient-hover: linear-gradient(135deg, #0b7bb0 0%, #2ea2d0 100%);
+  --secondary: #E8F4FB;
+  --secondary-foreground: #0E8FC9;
+  --muted: #F0F6FA;
+  --muted-foreground: #6B7280;
+  --accent: #E8F4FB;
+  --accent-foreground: #0E8FC9;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #E2EEF7;
+  --input: #E2EEF7;
+  --ring: #0E8FC9;
+  --radius: 1.5rem;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', 'Poppins', system-ui, -apple-system, sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  border-color: var(--border);
+}
+
+/* Glass effect with subtle blue tone */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(226, 238, 247, 0.8);
+}
+
+/* MedCare Soft Diffused Blue Shadows */
+.shadow-soft {
+  box-shadow: 0 12px 32px -8px rgba(14, 143, 201, 0.10), 0 4px 12px -2px rgba(14, 143, 201, 0.05);
+}
+
+.shadow-soft-lg {
+  box-shadow: 0 20px 45px -12px rgba(14, 143, 201, 0.16), 0 8px 20px -4px rgba(14, 143, 201, 0.08);
+}
+
+.shadow-card-blue {
+  box-shadow: 0 16px 36px -10px rgba(14, 143, 201, 0.35);
+}
+
+/* MedCare active sidebar nav item */
+.active-nav-item {
+  background: var(--primary-gradient) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 8px 20px -4px rgba(14, 143, 201, 0.4);
+}
+
+/* MedCare Pill Button */
+.btn-primary-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: var(--primary-gradient);
+  box-shadow: 0 8px 20px -4px rgba(14, 143, 201, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-primary-pill:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 12px 26px -4px rgba(14, 143, 201, 0.45);
+  filter: brightness(1.03);
+}
+
+.btn-primary-pill:active {
+  transform: translateY(0);
+}
+
+.btn-secondary-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  color: #0E8FC9;
+  background: #E8F4FB;
+  border: 1px solid #D1E8F6;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-secondary-pill:hover {
+  background: #DCEEF9;
+  color: #0b7bb0;
+  transform: translateY(-1.5px);
+}
+
+.btn-secondary-pill:active {
+  transform: translateY(0);
+}
+
+.btn-outline-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  color: #1F2A37;
+  background: #FFFFFF;
+  border: 1px solid #D8ECF8;
+  box-shadow: 0 4px 12px -2px rgba(14, 143, 201, 0.05);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-outline-pill:hover {
+  background: #F4F9FD;
+  border-color: #0E8FC9;
+  color: #0E8FC9;
+  transform: translateY(-1.5px);
+}
+
+.btn-outline-pill:active {
+  transform: translateY(0);
+}
+
+/* MedCare Eyebrow Label */
+.eyebrow-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #0E8FC9;
+  margin-bottom: 0.5rem;
+}
+
+/* Card lift animation */
+.card-hover-lift {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px -10px rgba(14, 143, 201, 0.14);
+}
