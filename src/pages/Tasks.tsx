@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { tasksAPI, membersAPI } from '../lib/api'
 import DataTable from '../components/DataTable'
 import Modal from '../components/Modal'
-import { Plus, CheckSquare, Calendar, User } from 'lucide-react'
+import { Plus, CheckSquare, Calendar, User, Clock } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
+import { notify } from '../components/ui/Toast'
+import DotGrid from '../components/ui/DotGrid'
+import { FormInput, FormSelect, FormTextarea } from '../components/ui/FormField'
 
 interface Task {
   id: number
@@ -63,15 +67,18 @@ export default function Tasks() {
     try {
       if (editingId) {
         await tasksAPI.update(editingId, formData)
+        notify.success('Action item updated!')
       } else {
         await tasksAPI.create(formData)
+        notify.success('New committee task assigned!')
       }
       window.dispatchEvent(new Event('dashboard-data-updated'))
       loadData()
       setIsModalOpen(false)
       resetForm()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving task:', error)
+      notify.error(error?.response?.data?.message || 'Could not save action item.')
     }
   }
 
@@ -93,10 +100,12 @@ export default function Tasks() {
     if (window.confirm('Are you sure you want to delete this task?')) {
       try {
         await tasksAPI.delete(id)
+        notify.info('Task removed.')
         window.dispatchEvent(new Event('dashboard-data-updated'))
         loadData()
       } catch (error) {
         console.error('Error deleting task:', error)
+        notify.error('Failed to remove task.')
       }
     }
   }
@@ -134,7 +143,7 @@ export default function Tasks() {
       key: 'assigned_to_name',
       label: 'Assigned Member',
       render: (value: string) => (
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1F2A37] bg-[#F8FBFE] border border-[#E2EEF7] px-3 py-1 rounded-full">
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1F2A37] bg-[#F8FBFE] border border-[#E2EEF7] px-2.5 py-1 rounded-lg whitespace-nowrap">
           <User size={13} className="text-[#0E8FC9]" />
           {value || 'Unassigned'}
         </span>
@@ -189,9 +198,17 @@ export default function Tasks() {
   ]
 
   return (
-    <div className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="space-y-8 relative"
+    >
+      {/* Subtle Dot Grid Header Backer */}
+      <DotGrid variant="dense" mask="tr" className="opacity-70 -inset-x-6 -top-6 h-80" />
+
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
         <div>
           <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#0E8FC9] block mb-1">
             OPERATIONS & ASSIGNMENTS
@@ -230,107 +247,78 @@ export default function Tasks() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingId ? 'Edit Task Details' : 'Create Operational Task'}
+        title={editingId ? 'Edit Committee Task' : 'Assign Committee Action'}
       >
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-              Task Title *
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Audit Q3 Member Share Certificates"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-              required
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          <FormInput
+            label="Task Title"
+            placeholder="e.g. Audit Q3 Member Share Certificates"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            icon={<CheckSquare size={15} />}
+            required
+          />
+
+          <div className="grid grid-cols-2 gap-3">
+            <FormSelect
+              label="Assign To"
+              value={formData.assigned_to ?? ''}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  assigned_to: e.target.value ? parseInt(e.target.value, 10) : null,
+                })
+              }
+            >
+              <option value="">Select a member</option>
+              {members.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name} (#{m.id})
+                </option>
+              ))}
+            </FormSelect>
+
+            <FormInput
+              label="Due Date"
+              type="date"
+              value={formData.due_date}
+              onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+              icon={<Clock size={15} />}
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-              Description
-            </label>
-            <textarea
-              placeholder="Provide actionable instructions for the assigned member..."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={3}
-              className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none resize-none"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <FormSelect
+              label="Priority"
+              value={formData.priority}
+              onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </FormSelect>
+
+            <FormSelect
+              label="Status"
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            >
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </FormSelect>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Assignee
-              </label>
-              <select
-                value={formData.assigned_to ?? ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    assigned_to: e.target.value ? parseInt(e.target.value, 10) : null,
-                  })
-                }
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none cursor-pointer"
-              >
-                <option value="">Select a member</option>
-                {members.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <FormTextarea
+            label="Instructions / Scope"
+            placeholder="Specific guidelines, document checklists, or verification requirements..."
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            rows={2}
+          />
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Deadline
-              </label>
-              <input
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Priority Level
-              </label>
-              <select
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none cursor-pointer"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Execution Status
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none cursor-pointer"
-              >
-                <option value="pending">Pending</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F0F6FA]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#F0F6FA]">
             <Button
               type="button"
               variant="outline"
@@ -344,11 +332,11 @@ export default function Tasks() {
               variant="primary"
               size="md"
             >
-              {editingId ? 'Save Changes' : 'Create Task'}
+              {editingId ? 'Save Changes' : 'Assign Task'}
             </Button>
           </div>
         </form>
       </Modal>
-    </div>
+    </motion.div>
   )
 }

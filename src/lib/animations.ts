@@ -50,3 +50,4 @@ export const buttonMotion = {
 export const cardHoverMotion = {
   whileHover: { y: -3, transition: { duration: 0.2, ease: 'easeOut' } },
 };
+

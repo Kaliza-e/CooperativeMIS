@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import { motion, type HTMLMotionProps } from 'framer-motion';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -39,18 +39,17 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(function Card(
     glass: 'glass shadow-soft text-[#1F2A37]',
   };
 
-  const hoverMotion = hoverLift
+  const liftHoverProps = hoverLift
     ? {
-        whileHover: { y: -4, transition: { duration: 0.2, ease: 'easeOut' } },
-        className: 'hover:shadow-soft-lg cursor-pointer',
+        whileHover: { y: -4, transition: { duration: 0.2, ease: 'easeOut' as const } },
       }
     : {};
 
   return (
     <motion.div
       ref={ref}
-      {...hoverMotion}
-      className={twMerge(clsx(baseClasses, paddingClasses[padding], variantClasses[variant], hoverMotion.className, className))}
+      {...liftHoverProps}
+      className={twMerge(clsx(baseClasses, paddingClasses[padding], variantClasses[variant], hoverLift ? 'hover:shadow-soft-lg cursor-pointer' : '', className))}
       {...props}
     >
       {children}

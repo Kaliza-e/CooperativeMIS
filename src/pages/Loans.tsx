@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { loansAPI, loanPaymentsAPI, membersAPI } from '../lib/api'
 import DataTable from '../components/DataTable'
 import Modal from '../components/Modal'
-import { Plus, TrendingUp, Calendar, Clock, PiggyBank, History, CheckCircle2 } from 'lucide-react'
+import { Plus, TrendingUp, Calendar, Clock, PiggyBank, History, CheckCircle2, DollarSign } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { Card } from '../components/ui/Card'
 import { notify } from '../components/ui/Toast'
+import DotGrid from '../components/ui/DotGrid'
+import { FormInput, FormSelect } from '../components/ui/FormField'
 
 interface Loan {
   id: number
@@ -227,7 +230,7 @@ export default function Loans() {
       render: (value: number | string) => {
         const bal = toNumber(value)
         return (
-          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+          <span className={`text-xs font-bold px-2.5 py-1 rounded-lg whitespace-nowrap ${
             bal > 0 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
           }`}>
             ${bal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -290,7 +293,12 @@ export default function Loans() {
     .reduce((sum, l) => sum + toNumber(l.remaining_balance), 0)
 
   return (
-    <div className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="space-y-8"
+    >
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -319,15 +327,18 @@ export default function Loans() {
       </div>
 
       {/* 4 Summary Cards: 1 Solid Blue Highlight Card */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Card 1: Solid Blue Highlight (Total Disbursed) */}
-        <Card
-          variant="highlight"
-          padding="lg"
-          hoverLift
-          className="flex flex-col justify-between min-h-[160px]"
-        >
-          <div className="flex items-start justify-between relative z-10">
+      <div className="relative">
+        <DotGrid variant="spacious" mask="none" className="opacity-90 -inset-x-4 -inset-y-3" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+          {/* Card 1: Solid Blue Highlight (Total Disbursed) */}
+          <Card
+            variant="highlight"
+            padding="lg"
+            hoverLift
+            className="flex flex-col justify-between min-h-[160px] relative overflow-hidden"
+          >
+            <DotGrid variant="light" mask="center" className="opacity-45" />
+            <div className="flex items-start justify-between relative z-10">
             <div>
               <span className="text-white/80 text-xs font-bold uppercase tracking-wider block">
                 Total Disbursed
@@ -435,6 +446,7 @@ export default function Loans() {
             </span>
           </div>
         </Card>
+        </div>
       </div>
 
       {/* Main Loans Table */}
@@ -446,136 +458,102 @@ export default function Loans() {
         onDelete={handleDelete}
       />
 
-      {/* Disburse Loan Modal */}
+      {/* Disburse Loan Modal - Compact & Clear */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingId ? 'Edit Loan Terms' : 'Disburse New Loan'}
       >
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {error && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-2xl text-xs font-semibold">
+            <div className="bg-rose-50 border border-rose-200 text-rose-700 p-2.5 rounded-xl text-xs font-semibold">
               {error}
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-              Borrower Member *
-            </label>
-            <select
-              value={formData.member_id || ''}
+          <FormSelect
+            label="Borrower Member"
+            value={formData.member_id || ''}
+            onChange={(e) =>
+              setFormData({ ...formData, member_id: e.target.value ? parseInt(e.target.value, 10) : 0 })
+            }
+            required
+          >
+            <option value="">Select member from roster</option>
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name} (#{m.id})
+              </option>
+            ))}
+          </FormSelect>
+
+          <div className="grid grid-cols-2 gap-3">
+            <FormInput
+              label="Principal ($)"
+              type="number"
+              step="0.01"
+              value={formData.amount || ''}
               onChange={(e) =>
-                setFormData({ ...formData, member_id: e.target.value ? parseInt(e.target.value, 10) : 0 })
+                setFormData({ ...formData, amount: e.target.value ? parseFloat(e.target.value) : 0 })
               }
-              className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none cursor-pointer"
+              placeholder="5000.00"
+              icon={<DollarSign size={14} />}
               required
-            >
-              <option value="">Select a member</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name} (#{m.id})
-                </option>
-              ))}
-            </select>
+            />
+            <FormInput
+              label="Interest Rate (%)"
+              type="number"
+              step="0.1"
+              value={formData.interest_rate || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, interest_rate: e.target.value ? parseFloat(e.target.value) : 0 })
+              }
+              placeholder="5.0"
+            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Principal Amount ($) *
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.amount}
-                onChange={(e) =>
-                  setFormData({ ...formData, amount: e.target.value ? parseFloat(e.target.value) : 0 })
-                }
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none font-bold"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Interest Rate (%)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.interest_rate}
-                onChange={(e) =>
-                  setFormData({ ...formData, interest_rate: e.target.value ? parseFloat(e.target.value) : 0 })
-                }
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            <FormInput
+              label="Disbursement Date"
+              type="date"
+              value={formData.loan_date}
+              onChange={(e) => setFormData({ ...formData, loan_date: e.target.value })}
+              required
+            />
+            <FormInput
+              label="Maturity Due Date"
+              type="date"
+              value={formData.due_date}
+              onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+              required
+            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Disbursement Date *
-              </label>
-              <input
-                type="date"
-                value={formData.loan_date}
-                onChange={(e) => setFormData({ ...formData, loan_date: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Maturity Due Date *
-              </label>
-              <input
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-                required
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            <FormInput
+              label="Monthly Target ($)"
+              type="number"
+              step="0.01"
+              value={formData.monthly_payment || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, monthly_payment: e.target.value ? parseFloat(e.target.value) : 0 })
+              }
+              placeholder="500.00"
+            />
+            <FormInput
+              label="Loan Purpose"
+              type="text"
+              placeholder="e.g. Equipment, Seeds"
+              value={formData.purpose}
+              onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
+            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Monthly Target ($)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.monthly_payment}
-                onChange={(e) =>
-                  setFormData({ ...formData, monthly_payment: e.target.value ? parseFloat(e.target.value) : 0 })
-                }
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Loan Purpose
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Agriculture Equipment"
-                value={formData.purpose}
-                onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F0F6FA]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#F0F6FA]">
             <Button
               type="button"
               variant="outline"
-              size="md"
+              size="sm"
               onClick={() => setIsModalOpen(false)}
             >
               Cancel
@@ -583,7 +561,7 @@ export default function Loans() {
             <Button
               type="submit"
               variant="primary"
-              size="md"
+              size="sm"
             >
               {editingId ? 'Save Changes' : 'Approve & Disburse'}
             </Button>
@@ -619,64 +597,44 @@ export default function Loans() {
             </div>
           )}
 
-          <form onSubmit={handlePaymentSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                  Payment Date *
-                </label>
-                <input
-                  type="date"
-                  value={paymentData.payment_date}
-                  onChange={(e) => setPaymentData({ ...paymentData, payment_date: e.target.value })}
-                  className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-2.5 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                  Amount Paid ($) *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={paymentData.amount_paid}
-                  onChange={(e) =>
-                    setPaymentData({ ...paymentData, amount_paid: e.target.value ? parseFloat(e.target.value) : 0 })
-                  }
-                  className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-2.5 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none font-bold"
-                  required
-                />
-              </div>
+          <form onSubmit={handlePaymentSubmit} className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <FormInput
+                label="Payment Date"
+                type="date"
+                value={paymentData.payment_date}
+                onChange={(e) => setPaymentData({ ...paymentData, payment_date: e.target.value })}
+                required
+              />
+              <FormInput
+                label="Amount Paid ($)"
+                type="number"
+                step="0.01"
+                value={paymentData.amount_paid || ''}
+                onChange={(e) =>
+                  setPaymentData({ ...paymentData, amount_paid: e.target.value ? parseFloat(e.target.value) : 0 })
+                }
+                placeholder="0.00"
+                icon={<DollarSign size={15} />}
+                required
+              />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                  Payment Method
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Bank Transfer, Cash, Mobile Money"
-                  value={paymentData.payment_method}
-                  onChange={(e) => setPaymentData({ ...paymentData, payment_method: e.target.value })}
-                  className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-2.5 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                  Notes
-                </label>
-                <input
-                  type="text"
-                  placeholder="Receipt number or notes"
-                  value={paymentData.notes}
-                  onChange={(e) => setPaymentData({ ...paymentData, notes: e.target.value })}
-                  className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-2.5 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-                />
-              </div>
+            <div className="grid grid-cols-2 gap-3">
+              <FormInput
+                label="Payment Method"
+                type="text"
+                placeholder="e.g. Mobile Money, Cash"
+                value={paymentData.payment_method}
+                onChange={(e) => setPaymentData({ ...paymentData, payment_method: e.target.value })}
+              />
+              <FormInput
+                label="Receipt / Reference"
+                type="text"
+                placeholder="e.g. REC-2026-089"
+                value={paymentData.notes}
+                onChange={(e) => setPaymentData({ ...paymentData, notes: e.target.value })}
+              />
             </div>
 
             <Button
@@ -685,7 +643,7 @@ export default function Loans() {
               size="md"
               className="w-full"
             >
-              Post Payment
+              Post Repayment
             </Button>
           </form>
 
@@ -721,6 +679,6 @@ export default function Loans() {
           </div>
         </div>
       </Modal>
-    </div>
+    </motion.div>
   )
 }

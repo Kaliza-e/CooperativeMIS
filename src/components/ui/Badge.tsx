@@ -18,8 +18,8 @@ export function Badge({
   className = '',
 }: BadgeProps) {
   const sizeClasses = {
-    sm: 'px-2.5 py-0.5 text-xs',
-    md: 'px-3.5 py-1 text-xs font-semibold',
+    sm: 'px-2.5 py-0.5 text-xs rounded-lg',
+    md: 'px-3.5 py-1 text-xs font-semibold rounded-lg sm:rounded-xl',
   };
 
   const variantClasses = {
@@ -44,7 +44,7 @@ export function Badge({
     <span
       className={twMerge(
         clsx(
-          'inline-flex items-center gap-1.5 rounded-full capitalize select-none',
+          'inline-flex items-center gap-1.5 rounded-lg sm:rounded-xl capitalize select-none whitespace-nowrap shrink-0',
           sizeClasses[size],
           variantClasses[variant],
           className

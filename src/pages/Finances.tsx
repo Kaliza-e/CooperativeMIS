@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { financesAPI } from '../lib/api'
 import DataTable from '../components/DataTable'
 import Modal from '../components/Modal'
-import { Plus, TrendingUp, TrendingDown, Wallet, Calendar, Tag, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { Plus, TrendingUp, TrendingDown, Wallet, Calendar, Tag, ArrowUpRight, ArrowDownRight, DollarSign } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { notify } from '../components/ui/Toast'
+import DotGrid from '../components/ui/DotGrid'
+import { FormInput, FormSelect, FormTextarea } from '../components/ui/FormField'
 
 interface Finance {
   id: number
@@ -132,7 +135,7 @@ export default function Finances() {
         const isIncome = value === 'income'
         return (
           <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap shrink-0 ${
               isIncome
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                 : 'bg-rose-50 text-rose-700 border border-rose-200'
@@ -192,7 +195,12 @@ export default function Finances() {
   const balance = totalIncome - totalExpense
 
   return (
-    <div className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="space-y-8"
+    >
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -221,15 +229,18 @@ export default function Finances() {
       </div>
 
       {/* 3 Summary Cards: Solid Blue Highlight for Current Balance */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Solid Blue Highlight Card */}
-        <Card
-          variant="highlight"
-          padding="lg"
-          hoverLift
-          className="flex flex-col justify-between min-h-[160px]"
-        >
-          <div className="flex items-start justify-between relative z-10">
+      <div className="relative">
+        <DotGrid variant="dense" mask="none" className="opacity-90 -inset-x-4 -inset-y-3" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+          {/* Solid Blue Highlight Card */}
+          <Card
+            variant="highlight"
+            padding="lg"
+            hoverLift
+            className="flex flex-col justify-between min-h-[160px] relative overflow-hidden"
+          >
+            <DotGrid variant="light" mask="center" className="opacity-45" />
+            <div className="flex items-start justify-between relative z-10">
             <div>
               <span className="text-white/80 text-xs font-bold uppercase tracking-wider block">
                 Net Treasury Balance
@@ -308,6 +319,7 @@ export default function Finances() {
             </span>
           </div>
         </Card>
+        </div>
       </div>
 
       {/* Main Finance Table */}
@@ -325,80 +337,58 @@ export default function Finances() {
         onClose={() => setIsModalOpen(false)}
         title={editingId ? 'Edit Ledger Record' : 'Record New Transaction'}
       >
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Transaction Type *
-              </label>
-              <select
-                value={formData.transaction_type}
-                onChange={(e) => setFormData({ ...formData, transaction_type: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none cursor-pointer"
-              >
-                <option value="income">Income / Deposit</option>
-                <option value="expense">Expense / Payout</option>
-              </select>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          <div className="grid grid-cols-2 gap-3">
+            <FormSelect
+              label="Transaction Type"
+              value={formData.transaction_type}
+              onChange={(e) => setFormData({ ...formData, transaction_type: e.target.value })}
+              required
+            >
+              <option value="income">Income (+ Inflow)</option>
+              <option value="expense">Expense (- Outflow)</option>
+            </FormSelect>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Amount ($) *
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value ? parseFloat(e.target.value) : 0 })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none font-bold"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Category
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Member Dues, Office Supplies"
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Date *
-              </label>
-              <input
-                type="date"
-                value={formData.transaction_date}
-                onChange={(e) => setFormData({ ...formData, transaction_date: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-              Description / Memo
-            </label>
-            <textarea
-              placeholder="Notes or voucher reference..."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={2}
-              className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none resize-none"
+            <FormInput
+              label="Amount ($)"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              value={formData.amount || ''}
+              onChange={(e) => setFormData({ ...formData, amount: e.target.value ? parseFloat(e.target.value) : 0 })}
+              icon={<DollarSign size={15} />}
+              required
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F0F6FA]">
+          <div className="grid grid-cols-2 gap-3">
+            <FormInput
+              label="Category"
+              type="text"
+              placeholder="e.g. Member Dues, Dividends"
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              icon={<Tag size={15} />}
+            />
+
+            <FormInput
+              label="Transaction Date"
+              type="date"
+              value={formData.transaction_date}
+              onChange={(e) => setFormData({ ...formData, transaction_date: e.target.value })}
+              required
+            />
+          </div>
+
+          <FormTextarea
+            label="Memo / Description"
+            placeholder="Reference notes, receipt number, or purpose..."
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            rows={2}
+          />
+
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#F0F6FA]">
             <Button
               type="button"
               variant="outline"
@@ -417,6 +407,6 @@ export default function Finances() {
           </div>
         </form>
       </Modal>
-    </div>
+    </motion.div>
   )
 }

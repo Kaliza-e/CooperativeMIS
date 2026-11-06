@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { meetingsAPI, attendanceAPI, membersAPI } from '../lib/api'
 import DataTable from '../components/DataTable'
 import Modal from '../components/Modal'
-import { Plus, Calendar, MapPin, Clock, Users } from 'lucide-react'
+import { Plus, Calendar, MapPin, Clock, Users, FileText } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { notify } from '../components/ui/Toast'
+import DotGrid from '../components/ui/DotGrid'
+import { FormInput, FormSelect, FormTextarea } from '../components/ui/FormField'
 
 interface Meeting {
   id: number
@@ -57,15 +60,18 @@ export default function Meetings() {
     try {
       if (editingId) {
         await meetingsAPI.update(editingId, formData)
+        notify.success('Meeting details updated!')
       } else {
         await meetingsAPI.create(formData)
+        notify.success('New General Assembly scheduled!')
       }
       window.dispatchEvent(new Event('dashboard-data-updated'))
       loadData()
       setIsModalOpen(false)
       resetForm()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving meeting:', error)
+      notify.error(error?.response?.data?.message || 'Could not schedule meeting.')
     }
   }
 
@@ -86,10 +92,12 @@ export default function Meetings() {
     if (window.confirm('Are you sure you want to delete this meeting?')) {
       try {
         await meetingsAPI.delete(id)
+        notify.info('Meeting removed from schedule.')
         window.dispatchEvent(new Event('dashboard-data-updated'))
         loadData()
       } catch (error) {
         console.error('Error deleting meeting:', error)
+        notify.error('Failed to remove meeting.')
       }
     }
   }
@@ -113,11 +121,13 @@ export default function Meetings() {
           member_id: memberId,
           status,
         })
+        notify.success(`Roll-call status: ${status}`)
         const res = await attendanceAPI.getByMeeting(selectedMeeting.id)
         setAttendance(res.data)
       }
     } catch (error) {
       console.error('Error recording attendance:', error)
+      notify.error('Could not record attendance status.')
     }
   }
 
@@ -216,9 +226,17 @@ export default function Meetings() {
   ]
 
   return (
-    <div className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="space-y-8 relative"
+    >
+      {/* Spacious dot grid texture */}
+      <DotGrid variant="spacious" mask="none" className="opacity-85 -inset-x-6 -top-6 h-80" />
+
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
         <div>
           <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#0E8FC9] block mb-1">
             ASSEMBLIES & SESSIONS
@@ -257,95 +275,67 @@ export default function Meetings() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingId ? 'Edit Meeting Details' : 'Schedule New Meeting'}
+        title={editingId ? 'Edit Assembly Details' : 'Convene Cooperative Assembly'}
       >
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-              Meeting Title *
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Q4 General Assembly & Audit"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          <FormInput
+            label="Assembly Title"
+            placeholder="e.g. Annual General Assembly & Review"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            icon={<FileText size={15} />}
+            required
+          />
+
+          <div className="grid grid-cols-2 gap-3">
+            <FormInput
+              label="Date & Time"
+              type="datetime-local"
+              value={formData.meeting_date}
+              onChange={(e) => setFormData({ ...formData, meeting_date: e.target.value })}
+              icon={<Clock size={15} />}
               required
             />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-              Agenda & Description
-            </label>
-            <textarea
-              placeholder="Summary of meeting agenda items..."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={2}
-              className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none resize-none"
+            <FormInput
+              label="Location / Venue"
+              placeholder="e.g. Conference Hall / Virtual"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              icon={<MapPin size={15} />}
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Date & Time *
-              </label>
-              <input
-                type="datetime-local"
-                value={formData.meeting_date}
-                onChange={(e) => setFormData({ ...formData, meeting_date: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Venue / Location
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Main Hall or Virtual"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            <FormSelect
+              label="Category"
+              value={formData.meeting_type}
+              onChange={(e) => setFormData({ ...formData, meeting_type: e.target.value })}
+            >
+              <option value="regular">Regular Assembly</option>
+              <option value="special">Special Committee</option>
+              <option value="emergency">Emergency Session</option>
+            </FormSelect>
+
+            <FormSelect
+              label="Status"
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            >
+              <option value="scheduled">Scheduled</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </FormSelect>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Meeting Category
-              </label>
-              <select
-                value={formData.meeting_type}
-                onChange={(e) => setFormData({ ...formData, meeting_type: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none cursor-pointer"
-              >
-                <option value="regular">Regular Assembly</option>
-                <option value="special">Special Committee</option>
-                <option value="emergency">Emergency Session</option>
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Status
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none cursor-pointer"
-              >
-                <option value="scheduled">Scheduled</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-          </div>
+          <FormTextarea
+            label="Agenda / Notes"
+            placeholder="Key agenda topics and discussion points..."
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            rows={2}
+          />
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F0F6FA]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#F0F6FA]">
             <Button
               type="button"
               variant="outline"
@@ -388,10 +378,10 @@ export default function Meetings() {
                     <span className="text-[11px] text-[#6B7280]">{member.role || 'Member'}</span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       onClick={() => handleRecordAttendance(member.id, 'present')}
-                      className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                         status === 'present'
                           ? 'bg-emerald-600 text-white shadow-sm'
                           : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
@@ -401,7 +391,7 @@ export default function Meetings() {
                     </button>
                     <button
                       onClick={() => handleRecordAttendance(member.id, 'absent')}
-                      className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                         status === 'absent'
                           ? 'bg-rose-600 text-white shadow-sm'
                           : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
@@ -411,7 +401,7 @@ export default function Meetings() {
                     </button>
                     <button
                       onClick={() => handleRecordAttendance(member.id, 'excused')}
-                      className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                         status === 'excused'
                           ? 'bg-amber-600 text-white shadow-sm'
                           : 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
@@ -436,6 +426,6 @@ export default function Meetings() {
           </div>
         </div>
       </Modal>
-    </div>
+    </motion.div>
   )
 }

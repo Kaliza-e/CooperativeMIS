@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { membersAPI, meetingsAPI, tasksAPI, financesAPI } from '../lib/api'
+import { membersAPI, meetingsAPI, tasksAPI, financesAPI, loansAPI } from '../lib/api'
 import {
-  Users, Calendar, CheckSquare, DollarSign,
+  Users, Calendar, DollarSign,
   TrendingUp, ArrowUpRight,
-  FileText, ChevronRight, Clock
+  FileText, ChevronRight, Clock, Landmark
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -12,6 +12,7 @@ import {
 import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
+import DotGrid from '../components/ui/DotGrid'
 
 interface FinanceRecord {
   transaction_type: 'income' | 'expense' | string
@@ -23,9 +24,14 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const [stats, setStats] = useState({
     totalMembers: 0,
+    activeMembers: 0,
     activeMeetings: 0,
     pendingTasks: 0,
     totalIncome: 0,
+    totalExpense: 0,
+    netBalance: 0,
+    totalLoans: 0,
+    totalLoanAmount: 0,
   })
   const [loading, setLoading] = useState(true)
   const [recentMembers, setRecentMembers] = useState<any[]>([])
@@ -90,22 +96,32 @@ export default function Dashboard() {
   const loadStats = async () => {
     try {
       setLoading(true)
-      const [membersRes, meetingsRes, tasksRes, financeRes, financesRes] = await Promise.all([
+      const [membersRes, meetingsRes, tasksRes, financeRes, financesRes, loansRes] = await Promise.all([
         membersAPI.getAll(),
         meetingsAPI.getAll(),
         tasksAPI.getAll(),
         financesAPI.getSummary(),
         financesAPI.getAll(),
+        loansAPI.getSummary().catch(() => ({ data: { total_loans: 0, total_loan_amount: '0.00' } })),
       ])
 
       const scheduledMeetings = (meetingsRes.data || []).filter((m: any) => m.status === 'scheduled').length
-      const pending = tasksRes.data.filter((t: any) => t.status === 'pending').length
+      const pending = (tasksRes.data || []).filter((t: any) => t.status === 'pending').length
+      const activeCount = (membersRes.data || []).filter((m: any) => m.status === 'active' || !m.status).length
+      const income = toNumber(financeRes.data?.total_income)
+      const expense = toNumber(financeRes.data?.total_expense)
+      const loanAmount = toNumber(loansRes.data?.total_loan_amount || loansRes.data?.active_loans_amount)
 
       setStats({
-        totalMembers: membersRes.data.length,
+        totalMembers: membersRes.data?.length || 0,
+        activeMembers: activeCount,
         activeMeetings: scheduledMeetings,
         pendingTasks: pending,
-        totalIncome: toNumber(financeRes.data?.total_income),
+        totalIncome: income,
+        totalExpense: expense,
+        netBalance: income - expense,
+        totalLoans: toNumber(loansRes.data?.total_loans),
+        totalLoanAmount: loanAmount,
       })
 
       const sortedMembers = [...(membersRes.data || [])].sort((a: any, b: any) => {
@@ -122,9 +138,9 @@ export default function Dashboard() {
       const monthsToShow = chartRange === '12' ? 12 : 7
       setChartData(buildFinanceChartData(financesRes.data || [], monthsToShow))
 
-      const memberStatuses = membersRes.data.reduce(
+      const memberStatuses = (membersRes.data || []).reduce(
         (acc: Record<string, number>, member: any) => {
-          const status = member.status || 'unknown'
+          const status = member.status || 'active'
           acc[status] = (acc[status] || 0) + 1
           return acc
         },
@@ -219,15 +235,18 @@ export default function Dashboard() {
       </div>
 
       {/* 4 Stat Cards: 1 Solid Blue Highlight Card + 3 White Cards with Icon Tiles */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Card 1: Solid Blue Highlight Card (Total Members) */}
-        <motion.div
-          variants={itemVariants}
-          whileHover={{ y: -4 }}
-          className="rounded-[26px] bg-gradient-to-br from-[#0E8FC9] via-[#1A9DD5] to-[#35B6E8] p-6 text-white shadow-card-blue relative overflow-hidden flex flex-col justify-between min-h-[175px]"
-        >
-          <div className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-white/10 blur-[1px] pointer-events-none" />
-          <div className="flex items-start justify-between relative z-10">
+      <div className="relative">
+        <DotGrid variant="spacious" mask="none" className="opacity-90 -inset-x-4 -inset-y-2" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+          {/* Card 1: Solid Blue Highlight Card (Total Members) */}
+          <motion.div
+            variants={itemVariants}
+            whileHover={{ y: -4 }}
+            className="rounded-[26px] bg-gradient-to-br from-[#0E8FC9] via-[#1A9DD5] to-[#35B6E8] p-6 text-white shadow-card-blue relative overflow-hidden flex flex-col justify-between min-h-[175px]"
+          >
+            <DotGrid variant="light" mask="center" className="opacity-45" />
+            <div className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-white/10 blur-[1px] pointer-events-none" />
+            <div className="flex items-start justify-between relative z-10">
             <div>
               <span className="text-white/80 text-xs font-bold uppercase tracking-wider block">
                 Total Members
@@ -249,7 +268,7 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Card 2: White Card (Total Income) */}
+        {/* Card 2: White Card (Net Treasury Balance) */}
         <motion.div
           variants={itemVariants}
           whileHover={{ y: -4 }}
@@ -258,10 +277,10 @@ export default function Dashboard() {
           <div className="flex items-start justify-between">
             <div>
               <span className="text-[#6B7280] text-xs font-bold uppercase tracking-wider block">
-                Total Revenue
+                Net Treasury Balance
               </span>
               <div className="text-3xl font-extrabold text-[#1F2A37] mt-1.5 tracking-tight">
-                ${stats.totalIncome.toLocaleString()}
+                ${stats.netBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-[#E8F4FB] text-[#0E8FC9] flex items-center justify-center border border-[#D5ECF8] shadow-sm">
@@ -270,14 +289,42 @@ export default function Dashboard() {
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#F0F6FA] flex items-center justify-between text-xs text-[#6B7280]">
-            <span>Net cooperative income</span>
-            <span className="inline-flex items-center gap-1 font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
-              <TrendingUp size={12} /> +5.4%
+            <span className="truncate pr-1">In: ${stats.totalIncome.toLocaleString()} • Out: ${stats.totalExpense.toLocaleString()}</span>
+            <span className="inline-flex items-center gap-1 font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full shrink-0">
+              <TrendingUp size={12} /> Net Positive
             </span>
           </div>
         </motion.div>
 
-        {/* Card 3: White Card (Scheduled Meetings) */}
+        {/* Card 3: White Card (Active Loan Portfolio) */}
+        <motion.div
+          variants={itemVariants}
+          whileHover={{ y: -4 }}
+          className="rounded-[26px] bg-white border border-[#E2EEF7] p-6 shadow-soft flex flex-col justify-between min-h-[175px]"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="text-[#6B7280] text-xs font-bold uppercase tracking-wider block">
+                Loan Portfolio
+              </span>
+              <div className="text-3xl font-extrabold text-[#1F2A37] mt-1.5 tracking-tight">
+                ${stats.totalLoanAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-[#E8F4FB] text-[#0E8FC9] flex items-center justify-center border border-[#D5ECF8] shadow-sm">
+              <Landmark size={22} />
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-[#F0F6FA] flex items-center justify-between text-xs text-[#6B7280]">
+            <span>{stats.totalLoans} Disbursed loan{stats.totalLoans !== 1 ? 's' : ''}</span>
+            <span className="inline-flex items-center gap-1 font-bold text-[#0E8FC9] bg-[#E8F4FB] border border-[#D1E8F6] px-2 py-0.5 rounded-full">
+              Repayment Active
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Card 4: White Card (Scheduled Assemblies & Actions) */}
         <motion.div
           variants={itemVariants}
           whileHover={{ y: -4 }}
@@ -298,50 +345,27 @@ export default function Dashboard() {
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#F0F6FA] flex items-center justify-between text-xs text-[#6B7280]">
-            <span>Upcoming sessions</span>
+            <span>{stats.pendingTasks} committee action{stats.pendingTasks !== 1 ? 's' : ''}</span>
             <span className="inline-flex items-center gap-1 font-bold text-[#0E8FC9] bg-[#E8F4FB] border border-[#D1E8F6] px-2 py-0.5 rounded-full">
               Quorum Active
             </span>
           </div>
         </motion.div>
-
-        {/* Card 4: White Card (Pending Tasks) */}
-        <motion.div
-          variants={itemVariants}
-          whileHover={{ y: -4 }}
-          className="rounded-[26px] bg-white border border-[#E2EEF7] p-6 shadow-soft flex flex-col justify-between min-h-[175px]"
-        >
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="text-[#6B7280] text-xs font-bold uppercase tracking-wider block">
-                Pending Actions
-              </span>
-              <div className="text-3xl font-extrabold text-[#1F2A37] mt-1.5 tracking-tight">
-                {stats.pendingTasks}
-              </div>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-[#E8F4FB] text-[#0E8FC9] flex items-center justify-center border border-[#D5ECF8] shadow-sm">
-              <CheckSquare size={22} />
-            </div>
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-[#F0F6FA] flex items-center justify-between text-xs text-[#6B7280]">
-            <span>Committee tasks</span>
-            <span className="inline-flex items-center gap-1 font-bold text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
-              In progress
-            </span>
-          </div>
-        </motion.div>
+        </div>
       </div>
 
-      {/* Row 2: Finance Chart + Member Distribution Pie */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Bar Chart */}
-        <motion.div
-          variants={itemVariants}
-          className="lg:col-span-2 bg-white p-7 rounded-[28px] shadow-soft border border-[#E2EEF7]"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+      {/* Row 2: Finance Chart + Member Distribution Pie with Dot-Grid Backer */}
+      <div className="relative">
+        <DotGrid variant="dense" mask="none" className="opacity-85 -inset-x-4 -inset-y-4" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
+          {/* Main Bar Chart */}
+          <motion.div
+            variants={itemVariants}
+            className="lg:col-span-2 bg-white p-7 rounded-[28px] shadow-soft border border-[#E2EEF7] relative overflow-hidden"
+          >
+            <DotGrid variant="subtle" mask="bl" className="opacity-40" />
+            <div className="relative z-10">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#0E8FC9] block">
                 FINANCIAL HEALTH
@@ -353,7 +377,7 @@ export default function Dashboard() {
               <select
                 value={chartRange}
                 onChange={(e) => setChartRange(e.target.value as '7' | '12')}
-                className="bg-[#F8FBFE] border border-[#E2EEF7] rounded-full px-4 py-1.5 text-xs font-semibold text-[#1F2A37] focus:border-[#0E8FC9] outline-none cursor-pointer"
+                className="bg-[#F8FBFE] border border-[#E2EEF7] rounded-xl px-3.5 py-1.5 text-xs font-semibold text-[#1F2A37] focus:border-[#0E8FC9] outline-none cursor-pointer"
               >
                 <option value="7">Last 7 Months</option>
                 <option value="12">Last 12 Months</option>
@@ -363,7 +387,7 @@ export default function Dashboard() {
 
           <div className="h-[290px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EDF4F9" />
                 <XAxis
                   dataKey="name"
@@ -376,9 +400,14 @@ export default function Dashboard() {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: '#6B7280', fontSize: 12, fontWeight: 500 }}
+                  tickFormatter={(v) => `$${Number(v).toLocaleString()}`}
                 />
                 <Tooltip
                   cursor={{ fill: '#F4F9FD' }}
+                  formatter={(val: any, name: any) => [
+                    `$${toNumber(val).toLocaleString()}`,
+                    name === 'income' ? 'Cooperative Income' : 'Operational Expense'
+                  ]}
                   contentStyle={{
                     borderRadius: '16px',
                     border: '1px solid #E2EEF7',
@@ -387,20 +416,21 @@ export default function Dashboard() {
                     fontWeight: 600,
                   }}
                 />
-                <Bar dataKey="income" name="Income" fill="#0E8FC9" radius={[6, 6, 0, 0]} barSize={16} />
-                <Bar dataKey="expense" name="Expense" fill="#35B6E8" radius={[6, 6, 0, 0]} barSize={16} />
+                <Bar dataKey="income" name="income" fill="#0E8FC9" radius={[6, 6, 0, 0]} barSize={16} />
+                <Bar dataKey="expense" name="expense" fill="#35B6E8" radius={[6, 6, 0, 0]} barSize={16} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-[#F0F6FA] text-xs font-semibold">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#0E8FC9]" />
-              <span className="text-[#1F2A37]">Cooperative Income</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#35B6E8]" />
-              <span className="text-[#6B7280]">Operational Expenses</span>
+            <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-[#F0F6FA] text-xs font-semibold">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-[#0E8FC9]" />
+                <span className="text-[#1F2A37]">Cooperative Income</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-[#35B6E8]" />
+                <span className="text-[#6B7280]">Operational Expenses</span>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -408,15 +438,16 @@ export default function Dashboard() {
         {/* Member Status Distribution Pie */}
         <motion.div
           variants={itemVariants}
-          className="bg-white p-7 rounded-[28px] shadow-soft border border-[#E2EEF7] flex flex-col justify-between"
+          className="bg-white p-7 rounded-[28px] shadow-soft border border-[#E2EEF7] flex flex-col justify-between relative overflow-hidden"
         >
-          <div>
+          <DotGrid variant="accent" mask="tr" className="opacity-35" />
+          <div className="relative z-10">
             <span className="text-[11px] font-bold uppercase tracking-wider text-[#0E8FC9] block mb-0.5">
               MEMBERSHIP
             </span>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-[#1F2A37]">Status Breakdown</h2>
-              <span className="text-xs font-bold text-[#0E8FC9] bg-[#E8F4FB] px-2.5 py-0.5 rounded-full">
+              <span className="text-xs font-bold text-[#0E8FC9] bg-[#E8F4FB] px-2.5 py-0.5 rounded-lg whitespace-nowrap">
                 Active Ratio
               </span>
             </div>
@@ -466,6 +497,7 @@ export default function Dashboard() {
             ))}
           </div>
         </motion.div>
+        </div>
       </div>
 
       {/* Row 3: New Members List + Upcoming Assemblies */}

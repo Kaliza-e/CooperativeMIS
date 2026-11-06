@@ -3,23 +3,24 @@ import { motion } from "framer-motion";
 import {
   User,
   Mail,
-  Lock,
   ArrowRight,
   Eye,
   EyeOff,
   Loader2,
   Handshake,
-  ShieldCheck,
-  CheckCircle2,
+  ArrowLeft,
+  Sparkles,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { authAPI } from "../lib/api";
+import { notify } from "../components/ui/Toast";
 
 export default function Signup() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -43,8 +44,9 @@ export default function Signup() {
     setSuccess("");
 
     if (
-      !form.fullName ||
-      !form.email ||
+      !form.firstName.trim() ||
+      !form.lastName.trim() ||
+      !form.email.trim() ||
       !form.password ||
       !form.confirmPassword
     ) {
@@ -62,12 +64,14 @@ export default function Signup() {
       return;
     }
 
+    const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`.trim();
+
     try {
       setLoading(true);
 
       const res = await authAPI.register({
-        name: form.fullName.trim(),
-        fullName: form.fullName.trim(),
+        name: fullName,
+        fullName: fullName,
         email: form.email.trim(),
         password: form.password,
       });
@@ -81,234 +85,351 @@ export default function Signup() {
       }
       window.dispatchEvent(new Event("auth-state-changed"));
 
+      notify.success("Cooperative account registered successfully!");
       setSuccess("Account created successfully! Redirecting...");
 
       setTimeout(() => {
         navigate("/dashboard", { replace: true });
-      }, 1200);
+      }, 1000);
     } catch (err: any) {
-      setError(
+      const msg =
         err?.response?.data?.message ||
-          err?.response?.data?.error ||
-          "Signup failed. Please try again."
-      );
+        err?.response?.data?.error ||
+        "Signup failed. Please try again.";
+      setError(msg);
+      notify.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-[#F4F9FD]">
-      {/* LEFT SIDE: MedCare Blue Gradient Hero with Real Photo */}
-      <div className="hidden lg:flex flex-col justify-between p-16 bg-gradient-to-br from-[#0E8FC9] via-[#1A9DD5] to-[#35B6E8] text-white relative overflow-hidden">
-        {/* Brand Header */}
-        <div className="relative z-10 flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
-          <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
-            <Handshake size={22} className="text-white" />
-          </div>
-          <div>
-            <span className="font-extrabold text-xl tracking-tight leading-none block">
-              TERIMBERE
-            </span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/80">
-              Cooperative System
-            </span>
-          </div>
-        </div>
-
-        {/* Center Presentation */}
-        <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="relative z-10 space-y-6 max-w-lg"
-        >
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-white">
-            <CheckCircle2 size={14} /> New Member Enrollment
-          </div>
-          <h1 className="text-4xl font-extrabold tracking-tight leading-tight">
-            Official Cooperative Membership Enrollment
-          </h1>
-          <p className="text-sm text-white/90 leading-relaxed">
-            Register your membership with full statutory compliance. Access transparent shares, mutual emergency funds, and low-interest credit.
-          </p>
-
-          {/* Real Photo Card */}
-          <div className="rounded-2xl overflow-hidden border border-white/25 shadow-xl relative aspect-[16/9]">
-            <img
-              src="https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=800&q=80"
-              alt="Cooperative member registration"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-              <span className="text-xs font-semibold text-white">
-                Member-Owned Community Finance • Annual Dividend Program
-              </span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Footer info */}
-        <div className="relative z-10 text-xs text-white/70">
-          © {new Date().getFullYear()} Terimbere Cooperative. Regulated & member-owned.
-        </div>
-      </div>
-
-      {/* RIGHT SIDE: Signup Form */}
-      <div className="flex items-center justify-center p-6 sm:p-10">
-        <motion.form
-          onSubmit={handleSubmit}
-          initial={{ opacity: 0, y: 25 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md bg-white rounded-[28px] shadow-soft border border-[#E2EEF7] p-8 sm:p-10"
-        >
-          <div className="inline-flex items-center gap-2 bg-[#E8F4FB] text-[#0E8FC9] text-xs font-bold uppercase tracking-wider px-3.5 py-1 rounded-full mb-4">
-            <ShieldCheck size={13} /> Membership Registration
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1F2A37] tracking-tight">
-            Create Account
-          </h2>
-          <p className="text-sm text-[#6B7280] mt-1 mb-6">
-            Enter your details below to join the cooperative.
-          </p>
-
-          {/* Alerts */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="mb-5 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-2xl text-xs font-semibold"
-            >
-              {error}
-            </motion.div>
-          )}
-
-          {success && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="mb-5 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl text-xs font-semibold"
-            >
-              {success}
-            </motion.div>
-          )}
-
-          {/* Full Name */}
-          <div className="mb-4">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block mb-2">
-              Full Name
-            </label>
-            <div className="flex items-center bg-[#F8FBFE] rounded-2xl px-4 border border-[#E2EEF7] focus-within:border-[#0E8FC9] focus-within:ring-2 focus-within:ring-[#0E8FC9]/15 transition-all">
-              <User size={18} className="text-[#6B7280] shrink-0" />
-              <input
-                type="text"
-                name="fullName"
-                value={form.fullName}
-                onChange={handleChange}
-                placeholder="e.g. Jean Claude Munyaneza"
-                className="w-full bg-transparent px-3 py-3.5 text-sm text-[#1F2A37] placeholder-[#9CA3AF] outline-none"
-              />
-            </div>
-          </div>
-
-          {/* Email */}
-          <div className="mb-4">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block mb-2">
-              Email Address
-            </label>
-            <div className="flex items-center bg-[#F8FBFE] rounded-2xl px-4 border border-[#E2EEF7] focus-within:border-[#0E8FC9] focus-within:ring-2 focus-within:ring-[#0E8FC9]/15 transition-all">
-              <Mail size={18} className="text-[#6B7280] shrink-0" />
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="member@terimbere.coop"
-                className="w-full bg-transparent px-3 py-3.5 text-sm text-[#1F2A37] placeholder-[#9CA3AF] outline-none"
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div className="mb-4">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block mb-2">
-              Password
-            </label>
-            <div className="flex items-center bg-[#F8FBFE] rounded-2xl px-4 border border-[#E2EEF7] focus-within:border-[#0E8FC9] focus-within:ring-2 focus-within:ring-[#0E8FC9]/15 transition-all">
-              <Lock size={18} className="text-[#6B7280] shrink-0" />
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="At least 6 characters"
-                className="w-full bg-transparent px-3 py-3.5 text-sm text-[#1F2A37] placeholder-[#9CA3AF] outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="text-[#6B7280] hover:text-[#0E8FC9] transition-colors p-1"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Confirm Password */}
-          <div className="mb-6">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block mb-2">
-              Confirm Password
-            </label>
-            <div className="flex items-center bg-[#F8FBFE] rounded-2xl px-4 border border-[#E2EEF7] focus-within:border-[#0E8FC9] focus-within:ring-2 focus-within:ring-[#0E8FC9]/15 transition-all">
-              <Lock size={18} className="text-[#6B7280] shrink-0" />
-              <input
-                type={showConfirm ? "text" : "password"}
-                name="confirmPassword"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                placeholder="Repeat your password"
-                className="w-full bg-transparent px-3 py-3.5 text-sm text-[#1F2A37] placeholder-[#9CA3AF] outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="text-[#6B7280] hover:text-[#0E8FC9] transition-colors p-1"
-              >
-                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full btn-primary-pill py-3.5 text-sm font-bold shadow-[0_8px_20px_-4px_rgba(14,143,201,0.35)] cursor-pointer"
+    <div className="min-h-screen w-full bg-[#FFFFFF] flex flex-col lg:flex-row relative overflow-x-hidden font-sans select-none">
+      {/* ─────────────────────────────────────────────────────────────
+          LEFT PANE: Clean Form with Organic Wave Transition
+      ───────────────────────────────────────────────────────────── */}
+      <div className="w-full lg:w-[54%] xl:w-[50%] min-h-screen bg-white flex flex-col justify-between px-6 sm:px-12 md:px-16 lg:px-20 py-8 lg:py-10 z-20 relative">
+        
+        {/* Top Navbar */}
+        <header className="flex items-center justify-between w-full">
+          {/* Brand Logo with blue dot indicator */}
+          <div
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2.5 cursor-pointer group"
+            title="Return to Public Landing Page"
           >
-            {loading ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                Creating Account...
-              </>
-            ) : (
-              <>
-                Register Account <ArrowRight size={18} />
-              </>
-            )}
-          </button>
+            <div className="w-7 h-7 rounded-full bg-[#0E8FC9] flex items-center justify-center text-white shadow-sm shadow-[#0E8FC9]/30 group-hover:scale-105 transition-transform">
+              <Handshake size={15} />
+            </div>
+            <span className="font-extrabold text-lg tracking-tight text-[#1F2A37]">
+              TERIMBERE<span className="text-[#0E8FC9]">.</span>
+            </span>
+          </div>
 
-          {/* Bottom Login Link */}
-          <p className="text-center mt-6 text-xs text-[#6B7280]">
-            Already have a cooperative account?
+          {/* Quick Navigation Links */}
+          <nav className="flex items-center gap-6 text-xs font-semibold text-[#6B7280]">
+            <Link
+              to="/"
+              className="hover:text-[#0E8FC9] transition-colors"
+            >
+              Home
+            </Link>
             <Link
               to="/login"
-              className="text-[#0E8FC9] font-bold ml-1 hover:underline"
+              className="text-[#0E8FC9] hover:text-[#0A6D9A] transition-colors font-bold"
             >
-              Sign in here
+              Sign In
             </Link>
-          </p>
-        </motion.form>
+          </nav>
+        </header>
+
+        {/* Center: Main SignUp Form */}
+        <main className="max-w-[440px] w-full mx-auto my-auto py-6">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            {/* Eyebrow */}
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#9CA3AF]">
+                START FOR FREE
+              </span>
+            </div>
+
+            {/* Heading with primary color dot (Reference Design) */}
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#111827] tracking-tight">
+              Create new account<span className="text-[#0E8FC9]">.</span>
+            </h1>
+
+            {/* Subheading / Switch link directly under heading */}
+            <p className="text-xs sm:text-sm text-[#6B7280] mt-2 mb-6">
+              Already A Member?{" "}
+              <Link
+                to="/login"
+                className="text-[#0E8FC9] font-bold hover:underline"
+              >
+                Log In
+              </Link>
+            </p>
+
+            {/* Error & Success Messages */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="mb-4 p-3.5 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-600 text-xs font-semibold flex items-center gap-2.5"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                <span>{error}</span>
+              </motion.div>
+            )}
+
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-2.5"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span>{success}</span>
+              </motion.div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-3.5">
+              {/* Row 1: First Name & Last Name (Side by Side) */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* First Name */}
+                <div className="bg-[#F4F8FB] hover:bg-[#EEF5FA] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#0E8FC9]/25 focus-within:border-[#0E8FC9] border border-[#E2EEF7] rounded-2xl px-4 py-2.5 transition-all">
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="firstName"
+                      className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]"
+                    >
+                      First Name
+                    </label>
+                    <User size={14} className="text-[#9CA3AF]" />
+                  </div>
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    required
+                    placeholder="Michal"
+                    value={form.firstName}
+                    onChange={handleChange}
+                    className="w-full bg-transparent text-sm font-semibold text-[#1F2A37] placeholder-[#B0BCC9] outline-none border-none p-0 mt-0.5"
+                  />
+                </div>
+
+                {/* Last Name */}
+                <div className="bg-[#F4F8FB] hover:bg-[#EEF5FA] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#0E8FC9]/25 focus-within:border-[#0E8FC9] border border-[#E2EEF7] rounded-2xl px-4 py-2.5 transition-all">
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="lastName"
+                      className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]"
+                    >
+                      Last Name
+                    </label>
+                    <User size={14} className="text-[#9CA3AF]" />
+                  </div>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    required
+                    placeholder="Masiak"
+                    value={form.lastName}
+                    onChange={handleChange}
+                    className="w-full bg-transparent text-sm font-semibold text-[#1F2A37] placeholder-[#B0BCC9] outline-none border-none p-0 mt-0.5"
+                  />
+                </div>
+              </div>
+
+              {/* Row 2: Email Address */}
+              <div className="bg-[#F4F8FB] hover:bg-[#EEF5FA] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#0E8FC9]/25 focus-within:border-[#0E8FC9] border border-[#E2EEF7] rounded-2xl px-4 py-2.5 transition-all">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="email"
+                    className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]"
+                  >
+                    Email
+                  </label>
+                  <Mail size={14} className="text-[#9CA3AF]" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="michal.masiak@anywhere.co"
+                  value={form.email}
+                  onChange={handleChange}
+                  className="w-full bg-transparent text-sm font-semibold text-[#1F2A37] placeholder-[#B0BCC9] outline-none border-none p-0 mt-0.5"
+                />
+              </div>
+
+              {/* Row 3: Password */}
+              <div className="bg-[#F4F8FB] hover:bg-[#EEF5FA] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#0E8FC9]/25 focus-within:border-[#0E8FC9] border border-[#E2EEF7] rounded-2xl px-4 py-2.5 transition-all">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="password"
+                    className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]"
+                  >
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-[#9CA3AF] hover:text-[#0E8FC9] transition-colors p-0 cursor-pointer"
+                    title={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="••••••••••••"
+                  value={form.password}
+                  onChange={handleChange}
+                  className="w-full bg-transparent text-sm font-semibold text-[#1F2A37] placeholder-[#B0BCC9] outline-none border-none p-0 mt-0.5 tracking-wider"
+                />
+              </div>
+
+              {/* Row 4: Confirm Password */}
+              <div className="bg-[#F4F8FB] hover:bg-[#EEF5FA] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#0E8FC9]/25 focus-within:border-[#0E8FC9] border border-[#E2EEF7] rounded-2xl px-4 py-2.5 transition-all">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]"
+                  >
+                    Confirm Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="text-[#9CA3AF] hover:text-[#0E8FC9] transition-colors p-0 cursor-pointer"
+                    title={showConfirm ? "Hide password" : "Show password"}
+                  >
+                    {showConfirm ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirm ? "text" : "password"}
+                  required
+                  placeholder="••••••••••••"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full bg-transparent text-sm font-semibold text-[#1F2A37] placeholder-[#B0BCC9] outline-none border-none p-0 mt-0.5 tracking-wider"
+                />
+              </div>
+
+              {/* Dual Action Buttons (Reference Layout) */}
+              <div className="flex items-center gap-3 pt-3">
+                {/* Secondary Button: Return home */}
+                <button
+                  type="button"
+                  onClick={() => navigate("/")}
+                  className="w-1/2 py-3 px-4 rounded-full bg-[#F4F8FB] hover:bg-[#E9F2F8] border border-[#E2EEF7] text-[#4B5563] text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <ArrowLeft size={15} />
+                  <span>Return home</span>
+                </button>
+
+                {/* Primary Button: Create account */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-1/2 py-3 px-4 rounded-full bg-[#0E8FC9] hover:bg-[#0A7DB1] active:bg-[#086b97] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0E8FC9]/30 transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Creating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Create account</span>
+                      <ArrowRight size={16} />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </main>
+
+        {/* Footer */}
+        <footer className="text-xs text-[#9CA3AF] flex items-center justify-between pt-3 border-t border-gray-100/80">
+          <span>© {new Date().getFullYear()} TERIMBERE Cooperative.</span>
+          <span className="inline-flex items-center gap-1.5 font-medium text-[#6B7280]">
+            <Sparkles size={12} className="text-[#0E8FC9]" /> Regulated Member Registry
+          </span>
+        </footer>
+      </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          RIGHT PANE: High-Res Scenic Photography + Organic Wave Section Divider
+      ───────────────────────────────────────────────────────────── */}
+      <div className="hidden lg:block lg:flex-1 relative min-h-screen overflow-hidden">
+        {/* High-Resolution Landscape that Complements Cyan Blue (#0E8FC9) */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-transform duration-1000"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=85')`,
+          }}
+        />
+
+        {/* Crisp Lighting Overlay (No Dimming) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+
+        {/* ─────────────────────────────────────────────────────────────
+            ORGANIC WAVY SECTION DIVIDER + PARALLEL DOTTED TRACE LINE
+            (Matches Reference Section Divider Curve Exactly)
+        ───────────────────────────────────────────────────────────── */}
+        <div className="absolute inset-y-0 -left-[1px] w-28 xl:w-36 h-full pointer-events-none z-10">
+          <svg
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            className="w-full h-full"
+          >
+            {/* 1. Parallel Dotted Contour Trace Line (Echoing the curve) */}
+            <path
+              d="M 12 0 C 45 18, -8 38, 55 56 C 105 70, -2 88, 38 100"
+              fill="none"
+              stroke="#0E8FC9"
+              strokeWidth="1.2"
+              strokeDasharray="3 5"
+              strokeOpacity="0.45"
+            />
+
+            {/* 2. Main White Organic Wave Fill */}
+            <path
+              d="M 0 0 L 8 0 C 35 18, -16 38, 42 56 C 88 70, -10 88, 25 100 L 0 100 Z"
+              fill="#FFFFFF"
+            />
+          </svg>
+        </div>
+
+        {/* Bottom Right: Modern Geometric Logo Emblem Watermark */}
+        <div className="absolute bottom-10 right-12 z-10 flex flex-col items-end pointer-events-none select-none text-white/80">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-white/70 animate-pulse" />
+            <div className="flex gap-1.5 items-end">
+              <span className="w-1.5 h-6 rounded-full bg-white/85 rotate-12" />
+              <span className="w-1.5 h-7 rounded-full bg-white/85 rotate-12" />
+              <span className="w-1.5 h-8 rounded-full bg-white rotate-12" />
+            </div>
+          </div>
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-white/90 mt-2">
+            TERIMBERE
+          </span>
+        </div>
       </div>
     </div>
   );

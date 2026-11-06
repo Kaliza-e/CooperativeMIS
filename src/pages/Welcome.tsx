@@ -27,6 +27,7 @@ import {
   Search,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
+import DotGrid from "../components/ui/DotGrid";
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ export default function Welcome() {
       subtitle:
         "TERIMBERE brings your members, savings, loans, meetings, and finances together in one organized platform.",
       bgImage:
-        "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1594708767771-a7502209ff51?auto=format&fit=crop&w=1920&q=85",
       statsTag: "Accurate Records • Instant Financial Reports",
     },
     {
@@ -57,7 +58,7 @@ export default function Welcome() {
       subtitle:
         "Automate repayment schedules, monitor balances in real time, and protect your treasury from calculation errors.",
       bgImage:
-        "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=1920&q=85",
       statsTag: "99.4% On-Time Repayments • Real-Time Amortization",
     },
     {
@@ -66,7 +67,7 @@ export default function Welcome() {
       subtitle:
         "Digital roll calls verify meeting quorum in seconds, delegating committee tasks and compiling signed reports.",
       bgImage:
-        "https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&w=1920&q=80",
+        "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1920&q=85",
       statsTag: "Live Attendance Verification • Signed PDF & Excel Exports",
     },
   ];
@@ -162,29 +163,26 @@ export default function Welcome() {
       : sampleTransactions.filter((tx) => tx.type === transactionTab);
 
   return (
-    <div className="min-h-screen bg-[#F4F9FD] text-[#1F2A37] overflow-x-hidden font-sans selection:bg-[#0E8FC9]/20 selection:text-[#0E8FC9]">
+    <div className="min-h-screen bg-[#F4F9FD] text-[#1F2A37] overflow-x-hidden font-sans selection:bg-[#0E8FC9]/20 selection:text-[#0E8FC9] relative">
+      {/* Visible Fintech Dot Grid Across Entire Landing Page */}
+      <DotGrid variant="subtle" mask="none" className="opacity-95 fixed" />
       
       {/* ─────────────────────────────────────────────────────────────
-          1. FLOATING PILL NAVIGATION BAR
+          1. FLOATING MODERN NAVIGATION BAR
       ───────────────────────────────────────────────────────────── */}
-      <nav className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 w-[94%] max-w-6xl z-50 transition-all">
-        <div className="bg-white/95 backdrop-blur-xl rounded-full shadow-[0_12px_36px_-6px_rgba(14,143,201,0.18)] px-5 sm:px-8 py-3.5 flex items-center justify-between border border-white/70 text-[#1F2A37]">
+      <nav className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 w-[95%] max-w-6xl z-50 transition-all">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_12px_36px_-6px_rgba(14,143,201,0.18)] px-5 sm:px-8 py-3.5 flex items-center justify-between border border-white/70 text-[#1F2A37]">
           {/* Brand Logo */}
           <div
             className="flex items-center gap-3 cursor-pointer select-none shrink-0"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0E8FC9] to-[#35B6E8] flex items-center justify-center text-white shadow-md shadow-[#0E8FC9]/25">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0E8FC9] to-[#35B6E8] flex items-center justify-center text-white shadow-md shadow-[#0E8FC9]/25 shrink-0">
               <Handshake size={20} />
             </div>
-            <div>
-              <span className="font-extrabold text-xl tracking-tight text-[#1F2A37] block leading-none">
-                TERIMBERE
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#0E8FC9]">
-                Cooperative System
-              </span>
-            </div>
+            <span className="font-extrabold text-xl tracking-tight text-[#1F2A37]">
+              TERIMBERE
+            </span>
           </div>
 
           {/* Desktop Navigation Links */}
@@ -210,18 +208,19 @@ export default function Welcome() {
           </div>
 
           {/* Right Action Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
             {isAuthenticated ? (
               <button
                 onClick={() => navigate("/dashboard")}
-                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-[#0E8FC9] hover:text-[#0973A3] px-4 py-2 rounded-full bg-[#E8F4FB] hover:bg-[#D4ECFB] transition-all cursor-pointer"
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-[#0E8FC9] hover:text-[#0973A3] px-4 py-2 rounded-xl bg-[#E8F4FB] hover:bg-[#D4ECFB] transition-all cursor-pointer whitespace-nowrap shrink-0"
               >
-                Go to Dashboard <ArrowRight size={14} />
+                <span>Go to Dashboard</span>
+                <ArrowRight size={14} className="shrink-0" />
               </button>
             ) : (
               <button
                 onClick={() => navigate("/login")}
-                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-[#1F2A37] hover:text-[#0E8FC9] px-4 py-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-[#1F2A37] hover:text-[#0E8FC9] px-4 py-2 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap shrink-0"
               >
                 Sign In
               </button>
@@ -229,16 +228,16 @@ export default function Welcome() {
 
             <button
               onClick={() => navigate(isAuthenticated ? "/dashboard" : "/signup")}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#0E8FC9] to-[#35B6E8] text-white text-xs font-bold hover:shadow-[0_8px_20px_-4px_rgba(14,143,201,0.4)] transition-all cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#0E8FC9] to-[#35B6E8] text-white text-xs font-bold hover:shadow-[0_8px_20px_-4px_rgba(14,143,201,0.4)] transition-all cursor-pointer whitespace-nowrap shrink-0"
             >
               <span>{isAuthenticated ? "My Account" : "Get Started"}</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={14} className="shrink-0" />
             </button>
 
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-[#4B5563] hover:text-[#0E8FC9] rounded-xl hover:bg-gray-100 cursor-pointer"
+              className="lg:hidden p-2 text-[#4B5563] hover:text-[#0E8FC9] rounded-xl hover:bg-gray-100 cursor-pointer shrink-0"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -330,17 +329,20 @@ export default function Welcome() {
           </motion.div>
         ))}
 
+        {/* Clearly Visible Tech Dot Grid Overlay on Hero */}
+        <DotGrid variant="hero" mask="soft" className="opacity-90 z-1" />
+
         {/* Hero Content */}
         <div className="relative z-10 max-w-4xl mx-auto text-center mt-8 sm:mt-12 space-y-6">
-          {/* Eyebrow Pill */}
+          {/* Eyebrow Badge (No Pill) */}
           <motion.div
             key={`badge-${activeSlide}`}
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[11px] font-bold uppercase tracking-widest shadow-sm"
+            className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-white/15 backdrop-blur-md border border-white/25 text-white text-[11px] font-bold uppercase tracking-widest shadow-sm whitespace-nowrap"
           >
-            <span className="w-2 h-2 rounded-full bg-[#35B6E8] animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-[#35B6E8] animate-pulse shrink-0" />
             <span>{heroSlides[activeSlide].badge}</span>
           </motion.div>
 
@@ -366,53 +368,55 @@ export default function Welcome() {
             {heroSlides[activeSlide].subtitle}
           </motion.p>
 
-          {/* Dual CTAs */}
+          {/* Dual CTAs - Responsive, Modern Rounded, No Overflow */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-3"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-3 max-w-lg sm:max-w-none mx-auto w-full"
           >
             <Button
               variant="primary"
               size="lg"
               onClick={() => navigate(isAuthenticated ? "/dashboard" : "/signup")}
-              className="w-full sm:w-auto px-8 py-4 text-sm font-bold shadow-[0_12px_30px_-6px_rgba(14,143,201,0.6)] cursor-pointer"
+              iconRight={<ArrowRight size={17} className="shrink-0" />}
+              className="w-full sm:w-auto px-7 sm:px-8 py-3.5 sm:py-4 text-sm font-bold shadow-[0_12px_30px_-6px_rgba(14,143,201,0.6)] cursor-pointer rounded-xl sm:rounded-2xl whitespace-nowrap shrink-0"
             >
               {isAuthenticated ? "Launch Dashboard" : "Get Started"}
-              <ArrowRight size={17} />
             </Button>
 
             <a
               href="#features"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white text-sm font-bold transition-all cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white text-sm font-bold transition-all cursor-pointer whitespace-nowrap shrink-0"
             >
-              Explore Features <ChevronDown size={16} />
+              <span>Explore Features</span>
+              <ChevronDown size={16} className="shrink-0" />
             </a>
           </motion.div>
 
-          {/* Search Pill Bar */}
+          {/* Search Bar - Modern Rounded (No Pill) */}
           <motion.form
             onSubmit={handleSearchSubmit}
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="max-w-xl mx-auto pt-4"
+            className="max-w-xl mx-auto pt-4 w-full"
           >
-            <div className="bg-white/95 backdrop-blur-md rounded-full shadow-[0_12px_36px_rgba(0,0,0,0.25)] p-2 pl-5 flex items-center border border-white/40">
-              <Search size={18} className="text-[#0E8FC9] shrink-0 mr-3" />
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_12px_36px_rgba(0,0,0,0.25)] p-2 pl-4 sm:pl-5 flex items-center border border-white/40 gap-2">
+              <Search size={18} className="text-[#0E8FC9] shrink-0 mr-1 sm:mr-2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search member records, loan plans, assemblies..."
-                className="w-full bg-transparent text-xs sm:text-sm text-[#1F2A37] placeholder-[#6B7280] outline-none"
+                className="w-full bg-transparent text-xs sm:text-sm text-[#1F2A37] placeholder-[#6B7280] outline-none min-w-0"
               />
               <button
                 type="submit"
-                className="btn-primary-pill text-xs font-bold px-5 py-2.5 shrink-0 shadow-md cursor-pointer"
+                className="btn-primary-pill text-xs font-bold px-4 sm:px-5 py-2.5 shrink-0 shadow-md cursor-pointer rounded-xl inline-flex items-center gap-1.5 whitespace-nowrap"
               >
-                Search <ArrowRight size={14} />
+                <span>Search</span>
+                <ArrowRight size={14} className="shrink-0" />
               </button>
             </div>
           </motion.form>
@@ -446,7 +450,7 @@ export default function Welcome() {
               onClick={() =>
                 setActiveSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)
               }
-              className="p-1.5 rounded-full bg-white/10 hover:bg-white/25 text-white transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/25 text-white transition-colors cursor-pointer"
               title="Previous"
             >
               <ChevronLeft size={16} />
@@ -465,7 +469,7 @@ export default function Welcome() {
             </div>
             <button
               onClick={() => setActiveSlide((prev) => (prev + 1) % heroSlides.length)}
-              className="p-1.5 rounded-full bg-white/10 hover:bg-white/25 text-white transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/25 text-white transition-colors cursor-pointer"
               title="Next"
             >
               <ChevronRight size={16} />
@@ -487,10 +491,13 @@ export default function Welcome() {
       {/* ─────────────────────────────────────────────────────────────
           3. SECTION A: ABOUT TERIMBERE (Concise)
       ───────────────────────────────────────────────────────────── */}
-      <section id="about" className="py-20 max-w-7xl mx-auto px-6 sm:px-12">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section id="about" className="py-20 max-w-7xl mx-auto px-6 sm:px-12 relative overflow-hidden">
+        {/* Crisp dot grid texture */}
+        <DotGrid variant="subtle" mask="none" className="opacity-90" />
+
+        <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 bg-[#E8F4FB] text-[#0E8FC9] text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full">
+            <div className="inline-flex items-center gap-2 bg-[#E8F4FB] text-[#0E8FC9] text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg whitespace-nowrap">
               <ShieldCheck size={14} /> Purpose-Built
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-[#1F2A37] tracking-tight">
@@ -529,7 +536,7 @@ export default function Welcome() {
               <h4 className="font-extrabold text-sm text-[#1F2A37]">
                 Governance Role Separation
               </h4>
-              <span className="text-[10px] font-bold text-[#0E8FC9] bg-[#E8F4FB] px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-[#0E8FC9] bg-[#E8F4FB] px-2.5 py-0.5 rounded-lg whitespace-nowrap">
                 Protected Access
               </span>
             </div>
@@ -566,10 +573,13 @@ export default function Welcome() {
       {/* ─────────────────────────────────────────────────────────────
           4. SECTION B: 6 CORE MODULES (Clean & Scannable)
       ───────────────────────────────────────────────────────────── */}
-      <section id="features" className="py-24 bg-white border-t border-[#E2EEF7]">
-        <div className="max-w-7xl mx-auto px-6 sm:px-12">
+      <section id="features" className="py-24 bg-white border-t border-[#E2EEF7] relative overflow-hidden">
+        {/* Crisp spacious dot grid pattern across modules section */}
+        <DotGrid variant="spacious" mask="none" className="opacity-85" />
+
+        <div className="max-w-7xl mx-auto px-6 sm:px-12 relative z-10">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-2">
-            <div className="inline-flex items-center gap-2 bg-[#E8F4FB] text-[#0E8FC9] text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full">
+            <div className="inline-flex items-center gap-2 bg-[#E8F4FB] text-[#0E8FC9] text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg whitespace-nowrap">
               <Layers size={14} /> The 6 Core Modules
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-[#1F2A37] tracking-tight">
@@ -582,7 +592,11 @@ export default function Welcome() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* 1. Member Management */}
-            <div className="bg-[#F8FBFE] rounded-3xl p-7 border border-[#E2EEF7] shadow-2xs space-y-3">
+            <motion.div
+              whileHover={{ y: -5 }}
+              transition={{ duration: 0.2 }}
+              className="bg-[#F8FBFE] rounded-3xl p-7 border border-[#E2EEF7] shadow-2xs space-y-3"
+            >
               <div className="w-11 h-11 rounded-2xl bg-[#E8F4FB] text-[#0E8FC9] flex items-center justify-center">
                 <Users size={22} />
               </div>
@@ -590,10 +604,14 @@ export default function Welcome() {
               <p className="text-xs text-[#6B7280] leading-relaxed">
                 Register members, maintain verified contact details, track membership status (`active`, `inactive`, `suspended`), and monitor participation.
               </p>
-            </div>
+            </motion.div>
 
             {/* 2. Savings and Contributions */}
-            <div className="bg-[#F8FBFE] rounded-3xl p-7 border border-[#E2EEF7] shadow-2xs space-y-3">
+            <motion.div
+              whileHover={{ y: -5 }}
+              transition={{ duration: 0.2 }}
+              className="bg-[#F8FBFE] rounded-3xl p-7 border border-[#E2EEF7] shadow-2xs space-y-3"
+            >
               <div className="w-11 h-11 rounded-2xl bg-[#E8F4FB] text-[#0E8FC9] flex items-center justify-center">
                 <PiggyBank size={22} />
               </div>
@@ -601,10 +619,14 @@ export default function Welcome() {
               <p className="text-xs text-[#6B7280] leading-relaxed">
                 Record deposits, track accumulated savings, monitor individual member balances, and maintain clear contribution histories.
               </p>
-            </div>
+            </motion.div>
 
             {/* 3. Loan Management */}
-            <div className="bg-[#F8FBFE] rounded-3xl p-7 border border-[#E2EEF7] shadow-2xs space-y-3">
+            <motion.div
+              whileHover={{ y: -5 }}
+              transition={{ duration: 0.2 }}
+              className="bg-[#F8FBFE] rounded-3xl p-7 border border-[#E2EEF7] shadow-2xs space-y-3"
+            >
               <div className="w-11 h-11 rounded-2xl bg-[#E8F4FB] text-[#0E8FC9] flex items-center justify-center">
                 <TrendingUp size={22} />
               </div>
@@ -612,10 +634,14 @@ export default function Welcome() {
               <p className="text-xs text-[#6B7280] leading-relaxed">
                 Issue loans, calculate interest and repayment schedules, log installments, and monitor outstanding balances with overpayment safeguards.
               </p>
-            </div>
+            </motion.div>
 
             {/* 4. Meetings Management */}
-            <div className="bg-[#F8FBFE] rounded-3xl p-7 border border-[#E2EEF7] shadow-2xs space-y-3">
+            <motion.div
+              whileHover={{ y: -5 }}
+              transition={{ duration: 0.2 }}
+              className="bg-[#F8FBFE] rounded-3xl p-7 border border-[#E2EEF7] shadow-2xs space-y-3"
+            >
               <div className="w-11 h-11 rounded-2xl bg-[#E8F4FB] text-[#0E8FC9] flex items-center justify-center">
                 <Calendar size={22} />
               </div>
@@ -623,10 +649,14 @@ export default function Welcome() {
               <p className="text-xs text-[#6B7280] leading-relaxed">
                 Schedule assemblies, track member attendance (`Present`, `Absent`, `Excused`), and verify statutory quorum thresholds in real time.
               </p>
-            </div>
+            </motion.div>
 
             {/* 5. Financial Management */}
-            <div className="bg-[#F8FBFE] rounded-3xl p-7 border border-[#E2EEF7] shadow-2xs space-y-3">
+            <motion.div
+              whileHover={{ y: -5 }}
+              transition={{ duration: 0.2 }}
+              className="bg-[#F8FBFE] rounded-3xl p-7 border border-[#E2EEF7] shadow-2xs space-y-3"
+            >
               <div className="w-11 h-11 rounded-2xl bg-[#E8F4FB] text-[#0E8FC9] flex items-center justify-center">
                 <DollarSign size={22} />
               </div>
@@ -634,10 +664,14 @@ export default function Welcome() {
               <p className="text-xs text-[#6B7280] leading-relaxed">
                 Record all cash inflows and outflows, categorize vouchers, and monitor your current liquid treasury balance.
               </p>
-            </div>
+            </motion.div>
 
             {/* 6. Reports and Analytics */}
-            <div className="bg-[#F8FBFE] rounded-3xl p-7 border border-[#E2EEF7] shadow-2xs space-y-3">
+            <motion.div
+              whileHover={{ y: -5 }}
+              transition={{ duration: 0.2 }}
+              className="bg-[#F8FBFE] rounded-3xl p-7 border border-[#E2EEF7] shadow-2xs space-y-3"
+            >
               <div className="w-11 h-11 rounded-2xl bg-[#E8F4FB] text-[#0E8FC9] flex items-center justify-center">
                 <FileText size={22} />
               </div>
@@ -645,7 +679,7 @@ export default function Welcome() {
               <p className="text-xs text-[#6B7280] leading-relaxed">
                 Generate signed PDF summaries and multi-sheet Excel (.xlsx) workbooks for audits, tax filings, and general assemblies.
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -653,10 +687,13 @@ export default function Welcome() {
       {/* ─────────────────────────────────────────────────────────────
           5. SECTION C: FINANCIAL OVERVIEW PREVIEW (8 Indicators)
       ───────────────────────────────────────────────────────────── */}
-      <section id="overview" className="py-24 bg-[#E8F4FB] relative">
-        <div className="max-w-7xl mx-auto px-6 sm:px-12">
+      <section id="overview" className="py-24 bg-[#E8F4FB] relative overflow-hidden">
+        {/* Dense crisp dot grid pattern behind dashboard statistics */}
+        <DotGrid variant="dense" mask="none" className="opacity-90" />
+
+        <div className="max-w-7xl mx-auto px-6 sm:px-12 relative z-10">
           <div className="text-center max-w-2xl mx-auto mb-14 space-y-2">
-            <div className="inline-flex items-center gap-2 bg-white text-[#0E8FC9] text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full shadow-2xs">
+            <div className="inline-flex items-center gap-2 bg-white text-[#0E8FC9] text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg shadow-2xs whitespace-nowrap">
               <BarChart3 size={14} /> Financial Overview
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-[#1F2A37] tracking-tight">
@@ -739,10 +776,13 @@ export default function Welcome() {
       {/* ─────────────────────────────────────────────────────────────
           6. SECTION D: TRANSACTION TRACKING
       ───────────────────────────────────────────────────────────── */}
-      <section id="transactions" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 sm:px-12">
+      <section id="transactions" className="py-24 bg-white relative overflow-hidden">
+        {/* Accent dot grid with crisp visibility */}
+        <DotGrid variant="accent" mask="none" className="opacity-85" />
+
+        <div className="max-w-7xl mx-auto px-6 sm:px-12 relative z-10">
           <div className="text-center max-w-2xl mx-auto mb-14 space-y-2">
-            <div className="inline-flex items-center gap-2 bg-[#E8F4FB] text-[#0E8FC9] text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full">
+            <div className="inline-flex items-center gap-2 bg-[#E8F4FB] text-[#0E8FC9] text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg whitespace-nowrap">
               <Filter size={14} /> Clear Records
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-[#1F2A37] tracking-tight">
@@ -755,12 +795,12 @@ export default function Welcome() {
 
           <div className="bg-[#F8FBFE] rounded-3xl border border-[#E2EEF7] p-6 max-w-5xl mx-auto shadow-soft">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E2EEF7] gap-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
                 <button
                   onClick={() => setTransactionTab("all")}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                     transactionTab === "all"
-                      ? "bg-[#0E8FC9] text-white"
+                      ? "bg-[#0E8FC9] text-white shadow-xs"
                       : "bg-white text-[#6B7280] hover:text-[#0E8FC9] border border-[#E2EEF7]"
                   }`}
                 >
@@ -768,9 +808,9 @@ export default function Welcome() {
                 </button>
                 <button
                   onClick={() => setTransactionTab("savings")}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                     transactionTab === "savings"
-                      ? "bg-[#0E8FC9] text-white"
+                      ? "bg-[#0E8FC9] text-white shadow-xs"
                       : "bg-white text-[#6B7280] hover:text-[#0E8FC9] border border-[#E2EEF7]"
                   }`}
                 >
@@ -778,9 +818,9 @@ export default function Welcome() {
                 </button>
                 <button
                   onClick={() => setTransactionTab("loans")}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                     transactionTab === "loans"
-                      ? "bg-[#0E8FC9] text-white"
+                      ? "bg-[#0E8FC9] text-white shadow-xs"
                       : "bg-white text-[#6B7280] hover:text-[#0E8FC9] border border-[#E2EEF7]"
                   }`}
                 >
@@ -788,9 +828,9 @@ export default function Welcome() {
                 </button>
                 <button
                   onClick={() => setTransactionTab("expenses")}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                     transactionTab === "expenses"
-                      ? "bg-[#0E8FC9] text-white"
+                      ? "bg-[#0E8FC9] text-white shadow-xs"
                       : "bg-white text-[#6B7280] hover:text-[#0E8FC9] border border-[#E2EEF7]"
                   }`}
                 >
@@ -840,7 +880,7 @@ export default function Welcome() {
                     >
                       {tx.amount}
                     </span>
-                    <span className="text-[9px] font-bold text-[#0E8FC9] bg-[#E8F4FB] px-2 py-0.5 rounded-full block mt-0.5">
+                    <span className="text-[9px] font-bold text-[#0E8FC9] bg-[#E8F4FB] px-2 py-0.5 rounded-md block mt-0.5 whitespace-nowrap">
                       {tx.status}
                     </span>
                   </div>
@@ -854,11 +894,14 @@ export default function Welcome() {
       {/* ─────────────────────────────────────────────────────────────
           7. SECTION E: REPORTS & REGULATORY EXPORTS
       ───────────────────────────────────────────────────────────── */}
-      <section id="reports" className="py-24 bg-[#F8FBFE] border-t border-[#E2EEF7]">
-        <div className="max-w-7xl mx-auto px-6 sm:px-12">
+      <section id="reports" className="py-24 bg-[#F8FBFE] border-t border-[#E2EEF7] relative overflow-hidden">
+        {/* Subtle crisp dot grid texture */}
+        <DotGrid variant="subtle" mask="none" className="opacity-90" />
+
+        <div className="max-w-7xl mx-auto px-6 sm:px-12 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 bg-[#E8F4FB] text-[#0E8FC9] text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full">
+              <div className="inline-flex items-center gap-2 bg-[#E8F4FB] text-[#0E8FC9] text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg whitespace-nowrap">
                 <FileSpreadsheet size={14} /> Official Exports
               </div>
               <h2 className="text-3xl sm:text-4xl font-black text-[#1F2A37] tracking-tight">
@@ -1000,6 +1043,9 @@ export default function Welcome() {
       ───────────────────────────────────────────────────────────── */}
       <section className="py-20 px-6 sm:px-12 max-w-7xl mx-auto">
         <div className="bg-gradient-to-br from-[#0E8FC9] via-[#1A9DD5] to-[#35B6E8] rounded-3xl sm:rounded-[36px] p-10 sm:p-14 text-white text-center relative overflow-hidden shadow-[0_20px_50px_-10px_rgba(14,143,201,0.5)]">
+          {/* Subtle light dot grid inside banner */}
+          <DotGrid variant="light" mask="center" className="opacity-30" />
+
           <div className="relative z-10 max-w-xl mx-auto space-y-4">
             <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
               Bring Clarity and Accountability to Your Cooperative
@@ -1009,18 +1055,18 @@ export default function Welcome() {
               Start managing your cooperative's members, contributions, micro-loans, and meetings with TERIMBERE today.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-3 max-w-md sm:max-w-none mx-auto w-full">
               <button
                 onClick={() => navigate(isAuthenticated ? "/dashboard" : "/signup")}
-                className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-white text-[#0E8FC9] font-black text-xs hover:bg-[#F4F9FD] shadow-lg transition-all cursor-pointer inline-flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-7 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-white text-[#0E8FC9] font-black text-xs sm:text-sm hover:bg-[#F4F9FD] shadow-lg transition-all cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0"
               >
-                {isAuthenticated ? "Go to Dashboard" : "Get Started Now"}
-                <ArrowRight size={15} />
+                <span>{isAuthenticated ? "Go to Dashboard" : "Get Started Now"}</span>
+                <ArrowRight size={16} className="shrink-0" />
               </button>
 
               <button
                 onClick={() => navigate("/login")}
-                className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white font-bold text-xs transition-all cursor-pointer"
+                className="w-full sm:w-auto px-7 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap shrink-0 inline-flex items-center justify-center"
               >
                 Sign In
               </button>
@@ -1030,41 +1076,88 @@ export default function Welcome() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          10. FOOTER
+          10. COOPERATIVE FOOTER (Modernized Layout & Wordings)
       ───────────────────────────────────────────────────────────── */}
-      <footer className="bg-[#0B1D2E] text-white pt-14 pb-10 px-6 sm:px-12 border-t border-white/10">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-white/10 text-xs">
-          <div className="space-y-3">
+      <footer className="bg-gradient-to-b from-[#0A2238] via-[#081B2E] to-[#051320] text-white pt-16 pb-12 px-6 sm:px-12 relative overflow-hidden border-t border-white/10">
+        {/* Soft watermark dot grid */}
+        <DotGrid variant="light" mask="center" className="opacity-15 pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10 text-xs relative z-10">
+          
+          {/* Col 1: Brand & Mission */}
+          <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0E8FC9] to-[#35B6E8] flex items-center justify-center text-white">
-                <Handshake size={16} />
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0E8FC9] to-[#35B6E8] flex items-center justify-center text-white shadow-md shadow-[#0E8FC9]/30">
+                <Handshake size={18} />
               </div>
-              <span className="font-extrabold text-lg text-white">TERIMBERE</span>
+              <span className="font-black text-xl text-white tracking-tight">
+                TERIMBERE<span className="text-[#35B6E8]">.</span>
+              </span>
             </div>
-            <p className="text-white/70 leading-relaxed">
-              Centralized cooperative management platform for members, savings, loans, meetings, and financial reports.
+            <p className="text-white/70 leading-relaxed text-xs">
+              Dedicated cooperative management platform for member registries, savings, loans, assembly quorums, and verified financial reporting.
             </p>
+            <div className="pt-1 flex flex-wrap gap-2 text-[10px] font-bold text-white/80">
+              <span className="bg-white/10 px-2.5 py-1 rounded-full border border-white/15">
+                ● Cooperative Registry
+              </span>
+              <span className="bg-white/10 px-2.5 py-1 rounded-full border border-white/15">
+                ● 256-Bit SSL
+              </span>
+            </div>
           </div>
 
-          <div className="space-y-2.5">
-            <h4 className="font-bold uppercase tracking-wider text-[#35B6E8] text-[11px]">
-              Core Modules
+          {/* Col 2: Cooperative Core Modules */}
+          <div className="space-y-3">
+            <h4 className="font-extrabold uppercase tracking-widest text-[#35B6E8] text-[11px]">
+              Cooperative Modules
             </h4>
-            <ul className="space-y-1.5 text-white/75">
-              <li>Member Management</li>
-              <li>Savings & Contributions</li>
-              <li>Loan Management</li>
-              <li>Meetings & Quorum</li>
-              <li>Financial Management</li>
-              <li>Reports & Analytics</li>
+            <ul className="space-y-2 text-white/75">
+              <li>
+                <a href="#features" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0E8FC9]" />
+                  Member Management & Roles
+                </a>
+              </li>
+              <li>
+                <a href="#features" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0E8FC9]" />
+                  Savings & Share Contributions
+                </a>
+              </li>
+              <li>
+                <a href="#features" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0E8FC9]" />
+                  Loan Portfolio & Repayments
+                </a>
+              </li>
+              <li>
+                <a href="#features" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0E8FC9]" />
+                  Meetings & Quorum Roll Calls
+                </a>
+              </li>
+              <li>
+                <a href="#features" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0E8FC9]" />
+                  Financial Inflow & Outflow
+                </a>
+              </li>
+              <li>
+                <a href="#features" className="hover:text-white transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0E8FC9]" />
+                  Compliance Reports & Exports
+                </a>
+              </li>
             </ul>
           </div>
 
-          <div className="space-y-2.5">
-            <h4 className="font-bold uppercase tracking-wider text-[#35B6E8] text-[11px]">
-              Cooperative System
+          {/* Col 3: Navigation */}
+          <div className="space-y-3">
+            <h4 className="font-extrabold uppercase tracking-widest text-[#35B6E8] text-[11px]">
+              Navigation
             </h4>
-            <ul className="space-y-1.5 text-white/75">
+            <ul className="space-y-2 text-white/75">
               <li>
                 <a href="#about" className="hover:text-white transition-colors">
                   About TERIMBERE
@@ -1072,51 +1165,72 @@ export default function Welcome() {
               </li>
               <li>
                 <a href="#features" className="hover:text-white transition-colors">
-                  Core Features
+                  System Architecture
                 </a>
               </li>
               <li>
                 <a href="#overview" className="hover:text-white transition-colors">
-                  Financial Overview
+                  Operational Indicators
                 </a>
               </li>
               <li>
                 <a href="#reports" className="hover:text-white transition-colors">
-                  Reports & Exports
+                  PDF & Excel Audit Statements
+                </a>
+              </li>
+              <li>
+                <a href="#faq" className="hover:text-white transition-colors">
+                  Frequently Asked Questions
                 </a>
               </li>
             </ul>
           </div>
 
-          <div className="space-y-2.5">
-            <h4 className="font-bold uppercase tracking-wider text-[#35B6E8] text-[11px]">
-              Access Portal
+          {/* Col 4: Member Portal Access (Replaced "Register Organization") */}
+          <div className="space-y-3">
+            <h4 className="font-extrabold uppercase tracking-widest text-[#35B6E8] text-[11px]">
+              Member Portal
             </h4>
-            <div className="space-y-2">
+            <p className="text-white/65 text-xs">
+              Access cooperative statements, active credit balances, and upcoming assembly schedules.
+            </p>
+            <div className="space-y-2.5 pt-1">
               <button
                 onClick={() => navigate("/login")}
-                className="w-full text-left font-bold text-white/90 hover:text-white cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-xl bg-[#0E8FC9] hover:bg-[#0b7bb0] text-white font-bold text-xs shadow-md shadow-[#0E8FC9]/30 transition-all cursor-pointer flex items-center justify-center gap-2"
               >
-                Sign In to Cooperative &rarr;
+                <span>Sign In to Cooperative</span>
+                <span>&rarr;</span>
               </button>
               <button
                 onClick={() => navigate("/signup")}
-                className="w-full text-left font-bold text-[#35B6E8] hover:underline cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-2"
               >
-                Register Organization &rarr;
+                <span>Create Member Account</span>
+                <span>&rarr;</span>
               </button>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-white/50 gap-3">
+        {/* Bottom Bar */}
+        <div className="max-w-7xl mx-auto pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-white/60 gap-4 relative z-10">
           <div>
-            © {new Date().getFullYear()} TERIMBERE Cooperative Management System.
+            © {new Date().getFullYear()} TERIMBERE. Centralized Cooperative Management System.
           </div>
-          <div className="flex items-center gap-5">
-            <span>Accurate Records</span>
-            <span>Transaction Transparency</span>
-            <span>Secure Reports</span>
+          <div className="flex items-center gap-6 font-medium text-[11px]">
+            <span className="flex items-center gap-1.5 text-white/70">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              Accurate Records
+            </span>
+            <span className="flex items-center gap-1.5 text-white/70">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              Transparent Ledgers
+            </span>
+            <span className="flex items-center gap-1.5 text-white/70">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              Verified Quorum
+            </span>
           </div>
         </div>
       </footer>

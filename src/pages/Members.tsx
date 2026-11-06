@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { membersAPI } from '../lib/api'
 import DataTable from '../components/DataTable'
 import Modal from '../components/Modal'
-import { Plus, Mail, Phone, ShieldCheck } from 'lucide-react'
+import { Plus, Mail, Phone, ShieldCheck, User } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { notify } from '../components/ui/Toast'
+import DotGrid from '../components/ui/DotGrid'
+import { FormInput, FormSelect } from '../components/ui/FormField'
 
 interface Member {
   id: number
@@ -145,7 +148,7 @@ export default function Members() {
       key: 'role',
       label: 'Role',
       render: (value: string) => (
-        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#1F2A37] bg-[#F8FBFE] border border-[#E2EEF7] px-3 py-1 rounded-full">
+        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#1F2A37] bg-[#F8FBFE] border border-[#E2EEF7] px-2.5 py-1 rounded-lg whitespace-nowrap">
           <ShieldCheck size={12} className="text-[#0E8FC9]" />
           {value || 'Member'}
         </span>
@@ -171,9 +174,17 @@ export default function Members() {
   ]
 
   return (
-    <div className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="space-y-8 relative"
+    >
+      {/* Subtle Dot Grid Texture Header Backer */}
+      <DotGrid variant="subtle" mask="none" className="opacity-85 -inset-x-6 -top-6 h-80" />
+
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
         <div>
           <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#0E8FC9] block mb-1">
             MEMBERSHIP DIRECTORY
@@ -208,84 +219,61 @@ export default function Members() {
         onDelete={handleDelete}
       />
 
-      {/* Modal with MedCare styling */}
+      {/* Modal with Professional Form Styling */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingId ? 'Edit Member Information' : 'Enroll New Member'}
       >
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-              Full Name *
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Marie Claire Uwera"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-              required
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          <FormInput
+            label="Full Name"
+            placeholder="e.g. Marie Claire Uwera"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            icon={<User size={15} />}
+            required
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormInput
+              label="Email"
+              type="email"
+              placeholder="member@terimbere.coop"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              icon={<Mail size={15} />}
+            />
+            <FormInput
+              label="Phone"
+              type="tel"
+              placeholder="+250 788 123 456"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              icon={<Phone size={15} />}
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Email Address
-              </label>
-              <input
-                type="email"
-                placeholder="member@terimbere.coop"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Phone Number
-              </label>
-              <input
-                type="text"
-                placeholder="+250 788 123 456"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-              />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <FormInput
+              label="Role / Title"
+              placeholder="e.g. General Member, Treasurer"
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              icon={<ShieldCheck size={15} />}
+            />
+            <FormSelect
+              label="Status"
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="suspended">Suspended</option>
+            </FormSelect>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Assigned Role
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. General Member, Treasurer"
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] placeholder-[#9CA3AF] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#1F2A37] block">
-                Account Status
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full bg-[#F8FBFE] border border-[#E2EEF7] rounded-2xl px-4 py-3 text-sm text-[#1F2A37] focus:border-[#0E8FC9] focus:ring-2 focus:ring-[#0E8FC9]/15 transition-all outline-none cursor-pointer"
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="suspended">Suspended</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F0F6FA]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#F0F6FA]">
             <Button
               type="button"
               variant="outline"
@@ -299,11 +287,11 @@ export default function Members() {
               variant="primary"
               size="md"
             >
-              {editingId ? 'Save Changes' : 'Enroll Member'}
+              {editingId ? 'Save Member Profile' : 'Enroll Member'}
             </Button>
           </div>
         </form>
       </Modal>
-    </div>
+    </motion.div>
   )
 }
